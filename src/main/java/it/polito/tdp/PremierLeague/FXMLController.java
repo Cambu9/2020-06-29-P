@@ -8,6 +8,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,30 +41,54 @@ public class FXMLController {
     private TextField txtMinuti; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbMese"
-    private ComboBox<?> cmbMese; // Value injected by FXMLLoader
+    private ComboBox<Integer> cmbMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM1"
-    private ComboBox<?> cmbM1; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbM2"
-    private ComboBox<?> cmbM2; // Value injected by FXMLLoader
+    private ComboBox<Match> cmbM2; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
 
     @FXML
     void doConnessioneMassima(ActionEvent event) {
-    	
+    	txtResult.clear();
+    	txtResult.appendText(model.massimaConnessione());
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-    	
+    	txtResult.clear();
+    	int minuti;
+    	Object mese;
+    	try {
+    		minuti = Integer.parseInt(txtMinuti.getText());
+    	}catch (NumberFormatException e) {
+			txtResult.appendText("Devi inserire un valore numerico di minuti giocati");
+			return;
+		}
+    	mese = cmbMese.getValue();
+    	if(mese == null) {
+    		txtResult.appendText("Devi selezionare un mese");
+    		return;
+    	}
+    	txtResult.appendText(model.creaGrafo((int) mese, minuti));
+    	cmbM1.getItems().addAll(model.matches);
+    	cmbM2.getItems().addAll(model.matches);
     }
 
     @FXML
     void doCollegamento(ActionEvent event) {
-    	
+    	txtResult.clear();
+    	Match m1;
+    	Match m2;
+    	m1 = cmbM1.getValue();
+    	m2 = cmbM2.getValue();
+    	model.calcolaPercorso(m1, m2);
+    	txtResult.appendText(model.best.toString());
+    	txtResult.appendText("\n" + model.pesoMax);
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -79,6 +105,10 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	for(int i = 1; i<13; i++) {
+    		this.cmbMese.getItems().add(i);
+    	}
+    	
   
     }
     

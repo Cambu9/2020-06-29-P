@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import it.polito.tdp.PremierLeague.model.Action;
+import it.polito.tdp.PremierLeague.model.Adiacenza;
 import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Player;
 
@@ -89,4 +90,37 @@ public class PremierLeagueDAO {
 		}
 	}
 	
+	public List<Adiacenza> getArchi(int mese, int minuti){
+		String sql = "SELECT m1.MatchID, m2.MatchID, COUNT(a1.PlayerID) AS peso "
+				+ "FROM actions a1, actions a2, matches m1, matches m2 "
+				+ "WHERE MONTH(m1.DATE) = ? AND MONTH(m2.Date)= ? AND a1.TimePlayed >= ? AND a2.TimePlayed >= ? AND a1.MatchID = m1.MatchID AND a2.MatchID = m2.MatchID AND m1.MatchID <  m2.MatchID AND a1.PlayerID = a2.PlayerID "
+				+ "GROUP BY m1.MatchID, m2.MatchID";
+		List<Adiacenza> result = new ArrayList<Adiacenza>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, mese);
+			st.setInt(2, mese);
+			st.setInt(3, minuti);
+			st.setInt(4, minuti);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				
+				Adiacenza a = new Adiacenza(res.getInt("m1.MatchID"), res.getInt("m2.MatchID"), res.getInt("peso"));
+				
+				
+				result.add(a);
+
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
 }
